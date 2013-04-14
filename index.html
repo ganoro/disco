@@ -1,0 +1,99 @@
+
+ <html>
+    <head>
+      <meta name="viewport" content="width=1024" />
+     <meta name="apple-mobile-web-app-capable" content="yes" /> 
+     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+     <script src="/disco/jquery.iosslider.min.js"></script>
+     <link rel="stylesheet" type="text/css" href="/disco/story.css" /> 
+
+
+     <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+ 
+      <title>My Facebook Login Page</title>
+    </head>
+    <body>
+     
+
+      <div id="facebook-list"></div>
+
+
+      <div id="fb-root"></div>
+      <script>
+
+      $(document).ready(function() {
+
+          /* basic - default settings */
+          $('.iosSlider').iosSlider();
+          
+          /* some custom settings */
+          $('.iosSlider').iosSlider({
+            snapToChildren: true,
+            scrollbar: true,
+            scrollbarHide: false,
+            desktopClickDrag: true,
+            scrollbarLocation: 'bottom',
+            scrollbarHeight: '6px',
+            scrollbarBackground: 'url(_img/some-img.png) repeat 0 0',
+            scrollbarBorder: '1px solid #000',
+            scrollbarMargin: '0 30px 16px 30px',
+            scrollbarOpacity: '0.75',
+          });
+
+        });
+        
+        window.fbAsyncInit = function() {
+          FB.init({
+            appId      : '458717760870825', // App ID
+            status     : true, // check login status
+            cookie     : true, // enable cookies to allow the server to access the session
+            xfbml      : true  // parse XFBML
+          });
+          FB.login(function(response) {
+            if (response.authResponse) {
+              console.log('Welcome!  Fetching your information.... ');
+               FB.api({ // call fql.query
+
+                            method : 'fql.query',
+                            query : "SELECT post_id, actor_id, type, description, permalink, message, attachment FROM stream WHERE filter_key in                 (SELECT filter_key FROM stream_filter WHERE uid = me() AND type = 'newsfeed') AND type != '347'"
+                        }, function(response) {
+                            
+                            for (var i=0;i<response.length;i++) {
+                              var m = (response[i].message.length == 0 ?  response[i].description : response[i].message)
+                              $("#facebook-list").append(m);
+                              $("#facebook-list").append("<br/>");
+                              var m = response[i].attachment.media;
+                              if (m) {
+                                var l =  response[i].attachment.media.length - 1;
+                                while (l >= 0) {
+                                  $("#facebook-list").append("<img src=\""+ response[i].attachment.media[l].src + "\" />");
+                                  $("#facebook-list").append("<br/>");
+                                  l--;
+                                }
+                                  
+                              }
+                              
+                            }
+                            // render activity items using 'facebookTemplate' template
+                        });
+
+
+
+            } else {
+              console.log('User cancelled login or did not fully authorize.');
+            }
+          }, {scope: 'email,read_stream,publish_actions,status_update'});
+
+        };
+        // Load the SDK Asynchronously
+        (function(d, s, id){
+           var js, fjs = d.getElementsByTagName(s)[0];
+           if (d.getElementById(id)) {return;}
+           js = d.createElement(s); js.id = id;
+           js.src = "//connect.facebook.net/en_US/all.js";
+           fjs.parentNode.insertBefore(js, fjs);
+         }(document, 'script', 'facebook-jssdk'));
+      </script>
+
+    </body>
+ </html>
